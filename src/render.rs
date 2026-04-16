@@ -202,7 +202,8 @@ fn render_mermaid_to_rgba(source: &str) -> Option<RenderedImage> {
 
     let scale_x = MAX_IMG_W as f32 / size.width();
     let scale_y = MAX_IMG_H as f32 / size.height();
-    let scale = scale_x.min(scale_y).clamp(1.0, 3.0);
+    // Allow downscaling for large SVGs — clamp(0.1, 3.0) prevents degenerate cases
+    let scale = scale_x.min(scale_y).clamp(0.1, 3.0);
 
     // Ensure even dimensions (some terminals/protocols handle odd sizes poorly)
     let w = (((size.width() * scale) as u32).max(16)) & !1;
@@ -211,11 +212,11 @@ fn render_mermaid_to_rgba(source: &str) -> Option<RenderedImage> {
     let mut pixmap = resvg::tiny_skia::Pixmap::new(w, h)?;
     pixmap.fill(resvg::tiny_skia::Color::WHITE);
 
-    // Center the diagram in the pixmap
+    // Center the diagram in the pixmap (offsets always >= 0)
     let actual_w = size.width() * scale;
     let actual_h = size.height() * scale;
-    let offset_x = (w as f32 - actual_w) / 2.0;
-    let offset_y = (h as f32 - actual_h) / 2.0;
+    let offset_x = ((w as f32 - actual_w) / 2.0).max(0.0);
+    let offset_y = ((h as f32 - actual_h) / 2.0).max(0.0);
     let transform =
         resvg::tiny_skia::Transform::from_scale(scale, scale).post_translate(offset_x, offset_y);
     resvg::render(&tree, transform, &mut pixmap.as_mut());
