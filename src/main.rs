@@ -100,20 +100,36 @@ fn run_cat(cli: Cli, mut content: String) -> std::io::Result<()> {
         watcher
     };
 
+    // Also watch for terminal resize via polling
     let mut last_reload = Instant::now();
+    let mut last_size = crossterm::terminal::size().unwrap_or((80, 24));
+
     loop {
-        if let Ok(()) = rx.recv() {
-            if last_reload.elapsed() > Duration::from_millis(200) {
-                if let Ok(new_content) = std::fs::read_to_string(&cli.file) {
-                    content = new_content;
-                    // Clear screen and re-render
-                    print!("\x1b[2J\x1b[H");
-                    catmode::render_to_stdout(&content);
-                    last_reload = Instant::now();
+        // Non-blocking: check file changes or timeout for resize check
+        match rx.recv_timeout(Duration::from_millis(250)) {
+            Ok(()) => {
+                if last_reload.elapsed() > Duration::from_millis(200) {
+                    if let Ok(new_content) = std::fs::read_to_string(&cli.file) {
+                        content = new_content;
+                        print!("\x1b[2J\x1b[H");
+                        catmode::render_to_stdout(&content);
+                        last_reload = Instant::now();
+                    }
                 }
             }
+            Err(mpsc::RecvTimeoutError::Timeout) => {
+                // Check for terminal resize
+                let new_size = crossterm::terminal::size().unwrap_or((80, 24));
+                if new_size != last_size {
+                    last_size = new_size;
+                    print!("\x1b[2J\x1b[H");
+                    catmode::render_to_stdout(&content);
+                }
+            }
+            Err(mpsc::RecvTimeoutError::Disconnected) => break,
         }
     }
+    Ok(())
 }
 
 /// TUI mode: SLT with Kitty graphics, interactive scrolling

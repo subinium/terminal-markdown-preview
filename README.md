@@ -164,13 +164,12 @@ $$
 
 ## Architecture
 
-```
-src/
-├── main.rs       — CLI, terminal detection, TUI/cat dispatch
-├── catmode.rs    — Cat mode: ANSI stdout + OSC 1337 images
-├── markdown.rs   — Comrak GFM AST → Block/Inline types
-└── render.rs     — TUI mode: SLT rendering, Kitty images, math
-```
+| File | Role |
+|------|------|
+| `src/main.rs` | CLI, terminal detection, TUI/cat dispatch |
+| `src/catmode.rs` | Cat mode: ANSI stdout + OSC 1337 images |
+| `src/markdown.rs` | Comrak GFM AST to Block/Inline types |
+| `src/render.rs` | TUI mode: SLT rendering, Kitty images, math |
 
 ---
 
