@@ -1,6 +1,6 @@
 [package]
 name = "tmdp"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 description = "Terminal Markdown Preview — render markdown with Mermaid diagrams, math equations, and syntax highlighting in your terminal"
 license = "MIT"
