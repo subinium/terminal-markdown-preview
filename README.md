@@ -1,59 +1,62 @@
-# tmp — Terminal Markdown Preview
+<div align="center">
 
-Preview markdown files in your terminal with full rendering: headings, links, tables, syntax-highlighted code blocks, **Mermaid diagrams**, and **LaTeX math equations**.
+# tmp
 
-Built with Rust. Pure terminal. No browser needed.
+**Terminal Markdown Preview**
+
+Preview markdown in your terminal — with Mermaid diagrams, math, and syntax highlighting.
+
+[![Crates.io](https://img.shields.io/crates/v/tmdp.svg)](https://crates.io/crates/tmdp)
+[![CI](https://github.com/subinium/terminal-markdown-preview/actions/workflows/ci.yml/badge.svg)](https://github.com/subinium/terminal-markdown-preview/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
+Built with Rust. Pure terminal. No browser.
+
+</div>
+
+---
 
 ## Install
 
 ```bash
-cargo install --path .
+cargo install tmdp
 ```
 
 ## Usage
 
 ```bash
-tmp README.md             # auto-detects terminal, live reload
-tmp README.md --no-watch  # no live reload
-tmp README.md --tui       # force TUI mode
-tmp README.md --cat       # force cat mode
+tmp README.md
 ```
 
-**Auto mode detection:** Kitty/WezTerm/Ghostty get TUI mode (interactive scroll). iTerm2/Warp/others get cat mode (native scroll). Both render pixel-perfect Mermaid diagrams.
+That's it. Auto-detects your terminal and picks the best rendering mode.
 
-### TUI mode (Kitty/WezTerm/Ghostty)
+| Flag | Effect |
+|------|--------|
+| *(none)* | Auto-detect terminal, live reload on |
+| `--no-watch` | Disable live reload |
+| `--tui` | Force TUI mode |
+| `--cat` | Force cat mode |
 
-| Key | Action |
-|-----|--------|
-| `q` / `Esc` | Quit |
-| `↑` `↓` / Mouse wheel | Scroll |
+---
 
-### Cat mode (iTerm2/Warp/others)
+## Features
 
-Output to stdout with ANSI styling + OSC 1337 inline images. Scroll with your terminal's native scrollback. `Ctrl+C` to quit.
+### Dual rendering modes
 
-## What it renders
+| Terminal | Mode | Images | Scroll |
+|----------|------|--------|--------|
+| Kitty | TUI | Pixel-perfect (Kitty protocol) | Interactive (`↑↓` / mouse) |
+| WezTerm | TUI | Pixel-perfect (Kitty protocol) | Interactive |
+| Ghostty | TUI | Pixel-perfect (Kitty protocol) | Interactive |
+| iTerm2 | Cat | Pixel-perfect (OSC 1337) | Native scrollback |
+| Warp | Cat | Pixel-perfect (OSC 1337) | Native scrollback |
 
-### Headings
+### Syntax highlighting
 
-# H1 Heading
-## H2 Heading
-### H3 Heading
-#### H4 Heading
-
-### Text formatting
-
-**Bold**, *italic*, ~~strikethrough~~, `inline code`, and [hyperlinks](https://github.com).
-
-### Code blocks with syntax highlighting
-
-15 languages via tree-sitter: Rust, Python, TypeScript, JavaScript, Go, C, C++, Java, Bash, JSON, YAML, CSS, HTML, TOML.
+15 languages via tree-sitter:
 
 ```rust
 fn main() {
-    let greeting = "Hello from tmp!";
-    println!("{greeting}");
-
     let numbers: Vec<i32> = (1..=10).filter(|n| n % 2 == 0).collect();
     for n in &numbers {
         println!("{n}");
@@ -62,8 +65,6 @@ fn main() {
 ```
 
 ```python
-from dataclasses import dataclass
-
 @dataclass
 class Point:
     x: float
@@ -71,55 +72,20 @@ class Point:
 
     def distance(self, other: "Point") -> float:
         return ((self.x - other.x) ** 2 + (self.y - other.y) ** 2) ** 0.5
-
-origin = Point(0, 0)
-target = Point(3, 4)
-print(f"Distance: {origin.distance(target)}")
 ```
 
 ```typescript
-interface Config {
-  host: string;
-  port: number;
-  debug?: boolean;
-}
-
-async function startServer(config: Config): Promise<void> {
-  const { host, port } = config;
-  console.log(`Listening on ${host}:${port}`);
+async function fetchUser(id: string): Promise<User> {
+  const res = await fetch(`/api/users/${id}`);
+  return res.json();
 }
 ```
 
-### Tables
-
-| Crate | Purpose | Pure Rust |
-|-------|---------|-----------|
-| comrak | GFM markdown parser | Yes |
-| mermaid-rs-renderer | Mermaid to SVG | Yes |
-| resvg | SVG rasterization | Yes |
-| superlighttui | TUI framework | Yes |
-
-### Math equations
-
-Inline math: $E = mc^2$, $\alpha + \beta = \gamma$
-
-Display math:
-
-$$
-\int_{-\infty}^{\infty} e^{-x^2} dx = \sqrt{\pi}
-$$
-
-$$
-\sum_{i=1}^{n} i^2 = \frac{n(n+1)(2n+1)}{6}
-$$
-
-$$
-\nabla \times \mathbf{E} = -\frac{\partial \mathbf{B}}{\partial t}
-$$
+Supported: Rust, Python, TypeScript, JavaScript, Go, C, C++, Java, Bash, JSON, YAML, CSS, HTML, TOML.
 
 ### Mermaid diagrams
 
-Pixel-perfect on all terminals. TUI mode uses Kitty graphics protocol. Cat mode uses iTerm2 inline images (OSC 1337).
+Rendered pixel-perfect via pure Rust (`mermaid-rs-renderer` + `resvg`). No Node.js required.
 
 ```mermaid
 flowchart TD
@@ -132,7 +98,7 @@ flowchart TD
     D --> H[Tree-sitter Highlight]
     E --> I[SVG → PNG → Image Protocol]
     F --> J[Unicode Math]
-    G --> K[Terminal Display]
+    G --> K[Terminal]
     H --> K
     I --> K
     J --> K
@@ -146,73 +112,73 @@ sequenceDiagram
 
     User->>tmp: tmp README.md
     tmp->>File: Read + watch
-    tmp->>tmp: Parse markdown
-    tmp->>tmp: Render
+    tmp->>tmp: Parse & render
     File-->>tmp: File changed
-    tmp->>tmp: Re-parse + update
+    tmp->>tmp: Re-render
 ```
 
-```mermaid
-erDiagram
-    BLOCK ||--o{ INLINE : contains
-    BLOCK {
-        string type
-        string content
-    }
-    INLINE {
-        string variant
-        string text
-    }
-```
+### Math equations
 
-### Blockquotes
+LaTeX to Unicode symbol conversion:
 
-> The best way to predict the future is to invent it.
-> — Alan Kay
+Inline: $E = mc^2$, $\alpha + \beta = \gamma$
 
-### Lists
+$$
+\int_{-\infty}^{\infty} e^{-x^2} dx = \sqrt{\pi}
+$$
 
-- Live reload on file save
-- Parallel mermaid rendering with caching
-- Responsive layout (adapts to terminal width)
-- Auto terminal detection (TUI vs Cat mode)
-- Syntax highlighting for 15 languages
+$$
+\sum_{i=1}^{n} i^2 = \frac{n(n+1)(2n+1)}{6}
+$$
+
+### Tables
+
+| Crate | Purpose | Pure Rust |
+|-------|---------|-----------|
+| comrak | GFM markdown parser | Yes |
+| mermaid-rs-renderer | Mermaid to SVG | Yes |
+| resvg | SVG rasterization | Yes |
+| superlighttui | TUI framework | Yes |
+
+### And more
+
+- **Headings** with `#` prefix and visual hierarchy
+- **Bold**, *italic*, ~~strikethrough~~, `inline code`
+- [Hyperlinks](https://github.com) (OSC 8 clickable)
+- **Blockquotes** with styled background
+- **Lists** with bullet points
+- **Horizontal rules**
+- **Live reload** on file save
 
 ---
 
-## How it works
+## Performance
+
+- Mermaid diagrams render in **parallel threads**
+- Results **cached by source hash** — unchanged diagrams skip rendering on reload
+- Font database loaded once via `LazyLock`
+- Kitty images cached by content hash — **zero I/O after first frame**
+- zlib-compressed Kitty transmission (`kitty-compress`)
+
+---
+
+## Architecture
 
 ```
 src/
-├── main.rs       — CLI, mode detection, TUI/cat dispatch, file watcher
-├── catmode.rs    — Cat mode: ANSI styled stdout + OSC 1337 images
-├── markdown.rs   — Comrak AST → Block/Inline types
-└── render.rs     — TUI mode: SLT rendering, Kitty images, math unicode
+├── main.rs       — CLI, terminal detection, TUI/cat dispatch
+├── catmode.rs    — Cat mode: ANSI stdout + OSC 1337 images
+├── markdown.rs   — Comrak GFM AST → Block/Inline types
+└── render.rs     — TUI mode: SLT rendering, Kitty images, math
 ```
 
-### Terminal support
-
-| Terminal | Mode | Mermaid | Scroll |
-|----------|------|---------|--------|
-| Kitty | TUI | Pixel-perfect (Kitty protocol) | Interactive |
-| WezTerm | TUI | Pixel-perfect (Kitty protocol) | Interactive |
-| Ghostty | TUI | Pixel-perfect (Kitty protocol) | Interactive |
-| iTerm2 | Cat | Pixel-perfect (OSC 1337) | Native |
-| Warp | Cat | Pixel-perfect (OSC 1337) | Native |
-| Other | Cat | Not displayed | Native |
-
-### Performance
-
-- Mermaid diagrams render in parallel background threads
-- Results cached by source hash (instant on live reload if unchanged)
-- Font database loaded once (LazyLock)
-- Kitty images cached by content hash (zero I/O after first frame, zlib compressed)
+---
 
 ## Known limitations
 
-- **Math** uses Unicode approximation — complex nested expressions may not render perfectly
-- **Mermaid** quality depends on `mermaid-rs-renderer` (0.2.x) — some diagram types have minor rendering quirks
-- **Cat mode** re-renders the entire document on file change (no incremental update)
+- **Math**: Unicode approximation — complex nested expressions may not render perfectly
+- **Mermaid**: depends on `mermaid-rs-renderer` 0.2.x — some diagram types have minor quirks
+- **Cat mode**: re-renders entire document on file change
 
 ## License
 
