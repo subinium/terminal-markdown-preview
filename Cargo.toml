@@ -1,0 +1,52 @@
+[package]
+name = "tmdp"
+version = "0.1.0"
+edition = "2024"
+description = "Terminal Markdown Preview — render markdown with Mermaid diagrams, math equations, and syntax highlighting in your terminal"
+license = "MIT"
+repository = "https://github.com/subinium/terminal-markdown-preview"
+readme = "README.md"
+keywords = ["markdown", "terminal", "preview", "mermaid", "tui"]
+categories = ["command-line-utilities", "text-processing", "visualization"]
+rust-version = "1.85"
+
+[[bin]]
+name = "tmp"
+path = "src/main.rs"
+
+[dependencies]
+# TUI framework
+superlighttui = { version = "0.17", features = [
+    "image", "kitty-compress",
+    "syntax-rust", "syntax-python", "syntax-javascript", "syntax-typescript",
+    "syntax-go", "syntax-bash", "syntax-json", "syntax-yaml",
+    "syntax-c", "syntax-cpp", "syntax-java", "syntax-css", "syntax-html", "syntax-toml",
+] }
+
+# Markdown parsing (GFM)
+comrak = { version = "0.52", default-features = false }
+
+# Mermaid diagram rendering (pure Rust, SVG output)
+mermaid-rs-renderer = { version = "0.2", default-features = false }
+
+# SVG rasterization
+resvg = "0.47"
+
+# Image decoding
+image = { version = "0.25", default-features = false, features = ["png"] }
+
+# File watching for live reload
+notify = "8"
+
+# Terminal size detection
+crossterm = "0.28"
+
+# Base64 (iTerm2 inline images in cat mode)
+base64 = "0.22"
+
+# CLI
+clap = { version = "4", features = ["derive"] }
+
+[profile.release]
+opt-level = 3
+lto = true
